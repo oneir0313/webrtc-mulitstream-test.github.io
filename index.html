@@ -155,15 +155,6 @@
 			}
 
 			function getMixedMultipleCameras(isCustomized) {
-				let camIds;
-				MediaStreamTrack.getSources(function (sources) {
-					let cams = _.filter(sources, function (e) {
-						return e.kind === 'video';
-					});
-					camIds = _.map(cams, function (e) {
-						return e.id;
-					});
-				});
 				if (isCustomized === true) {
 					var fullCanvasStream = new MediaStream();
 					cameraStream.getTracks().forEach(function (track) {
@@ -202,6 +193,13 @@
 
 					updateMediaHTML('Mixed Multiple Cameras!');
 				} else {
+					let camIds;
+					navigator.mediaDevices.enumerateDevices().then(function (sources) {
+						var camIds = sources.map(function (source) {
+						if(source.kind === 'video'){
+							return source.id;
+						}
+					});
 					const camerasStream = camIds.map(camId => {
 						navigator.mediaDevices.getUserMedia({
 							video: {
