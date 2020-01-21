@@ -194,7 +194,7 @@
 				} else {
 					let camIds;
 					navigator.mediaDevices.enumerateDevices().then(function (sources) {
-						camIds = sources.map(function (source) {
+						camIds = sources.filter(function (source) {
 							if(source.kind === 'videoinput'){
 								return source.deviceId;
 							}
