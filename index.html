@@ -58,7 +58,7 @@
 
 			<div id="video-preview" style="margin-top: 15px;">
 				<h2 style="display: block;"></h2>
-				<video playsinline autoplay muted=false volume=0></video>
+				<video controls playsinline autoplay muted=false volume=0></video>
 			</div>
 		</section>
 
@@ -155,7 +155,7 @@
 			}
 
 			function getMixedMultipleCameras(isCustomized) {
-				const camIds;
+				let camIds;
 				MediaStreamTrack.getSources(function (sources) {
 					let cams = _.filter(sources, function (e) {
 						return e.kind === 'video';
