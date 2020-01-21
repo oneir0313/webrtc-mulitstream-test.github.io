@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	<title>MultiStreamsMixer | Mix Multiple Cameras & Screens into Single Stream</title>
+	<title>MultiStreamsMixer</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -30,8 +30,7 @@
 		}
 	</style>
 
-	<script src="/MultiStreamsMixer.js"></script>
-	<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+	<script src="https://www.webrtc-experiment.com/MultiStreamsMixer.js"></script>
 	<script src="https://www.webrtc-experiment.com/RecordRTC.js"></script>
 	<script src="https://www.webrtc-experiment.com/FileSelector.js"></script>
 </head>
@@ -196,8 +195,8 @@
 					let camIds;
 					navigator.mediaDevices.enumerateDevices().then(function (sources) {
 						camIds = sources.map(function (source) {
-							if(source.kind === 'video'){
-								return source.id;
+							if(source.kind === 'videoinput'){
+								return source.deviceId;
 							}
 						});
 					});
