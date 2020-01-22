@@ -154,6 +154,7 @@
 			}
 
 			function getMixedMultipleCameras(isCustomized) {
+				let camerasStream;
 				if (isCustomized === true) {
 					var fullCanvasStream = new MediaStream();
 					cameraStream.getTracks().forEach(function (track) {
@@ -192,65 +193,72 @@
 
 					updateMediaHTML('Mixed Multiple Cameras!');
 				} else {
-					let camIds;
-					navigator.mediaDevices.enumerateDevices().then(function (sources) {
-						camIds = sources.filter(function (source) {
-							if(source.kind === 'videoinput'){
-								return source.deviceId;
+					navigator.mediaDevices.enumerateDevices().then( sources => {
+						let camerasId = []
+						sources.forEach( source  => {
+							if (source.kind === 'videoinput') {
+								camerasId.push(source.deviceId);
 							}
 						});
-					});
-					const camerasStream = camIds.map(camId => {
-						navigator.mediaDevices.getUserMedia({
-							video: {
-								mandatory: {
-									sourceId: camId
-								}
-							}
-						}).then(function (cameraStream) {
-							normalVideoRenderHandler(cameraStream, 'Camera', function (context, x, y,
-								width, height, idx, textToDisplay) {
-								context.font = '30px Georgia';
-								textToDisplay += ' #' + (idx + 1);
-								var measuredTextWidth = parseInt(context.measureText(
-									textToDisplay).width);
-								x = x + (parseInt((width - measuredTextWidth)) / 2);
+						return camerasId;
+					}).then( camIds => {
+						const asyncCameraStream = async () => {
+							let camerasStream = await Promise.all(camIds.map(async (camId) => {
+								const cameraStream = await getMediaStream(camId);
+								return cameraStream;
+							}));
+							mixer = new MultiStreamsMixer(camerasStream);
 
-								y = height - 40;
+							mixer.frameInterval = 1;
+							mixer.startDrawingFrames();
 
-								if (idx == 2 || idx == 3) {
-									y = (height * 2) - 40;
-								}
+							videoPreview.srcObject = mixer.getMixedStream();
 
-								if (idx == 4 || idx == 5) {
-									y = (height * 3) - 40;
-								}
-
-								context.strokeStyle = 'rgb(255, 0, 0)';
-								context.fillStyle = 'rgba(255, 255, 0, .5)';
-								roundRect(context, x - 20, y - 25, measuredTextWidth + 40, 35,
-									20, true);
-								var gradient = context.createLinearGradient(0, 0, width * 2, 0);
-								gradient.addColorStop('0', 'magenta');
-								gradient.addColorStop('0.5', 'blue');
-								gradient.addColorStop('1.0', 'red');
-								context.fillStyle = gradient;
-								context.fillText(textToDisplay, x, y);
-							});
-							return cameraStream;
-						});
-						mixer = new MultiStreamsMixer(camerasStream);
-
-
-						mixer.frameInterval = 1;
-						mixer.startDrawingFrames();
-
-						videoPreview.srcObject = mixer.getMixedStream();
-
-						updateMediaHTML('Mixed Multiple Cameras!');
+							updateMediaHTML('Mixed Multiple Cameras!');
+						};
+						asyncCameraStream();
 					});
 				}
 			}
+
+			function getMediaStream(cameraId){
+				return navigator.mediaDevices.getUserMedia({
+					video: {
+						optional: [{sourceId: cameraId}]
+					}
+				}).then(function (cameraStream) {
+					normalVideoRenderHandler(cameraStream, 'Camera', function (context, x, y,
+						width, height, idx, textToDisplay) {
+						context.font = '30px Georgia';
+						textToDisplay += ' #' + (idx + 1);
+						var measuredTextWidth = parseInt(context.measureText(
+							textToDisplay).width);
+						x = x + (parseInt((width - measuredTextWidth)) / 2);
+
+						y = height - 40;
+
+						if (idx == 2 || idx == 3) {
+							y = (height * 2) - 40;
+						}
+
+						if (idx == 4 || idx == 5) {
+							y = (height * 3) - 40;
+						}
+
+						context.strokeStyle = 'rgb(255, 0, 0)';
+						context.fillStyle = 'rgba(255, 255, 0, .5)';
+						roundRect(context, x - 20, y - 25, measuredTextWidth + 40, 35,
+							20, true);
+						var gradient = context.createLinearGradient(0, 0, width * 2, 0);
+						gradient.addColorStop('0', 'magenta');
+						gradient.addColorStop('0.5', 'blue');
+						gradient.addColorStop('1.0', 'red');
+						context.fillStyle = gradient;
+						context.fillText(textToDisplay, x, y);
+					});
+					return cameraStream;
+				});
+		}
 
 			function getMixedMicrophoneAndMp3() {
 				updateMediaHTML('Select Mp3 file.');
